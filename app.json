@@ -6,12 +6,8 @@
     "icon": "./src/assets/images/app-icon.png",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "plugins": [
-      "expo-screen-orientation"
-    ],
+    "assetBundlePatterns": ["**/*"],
+    "plugins": ["expo-screen-orientation"],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.frimjo.unitedcolors",
