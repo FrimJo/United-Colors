@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "United Colors",
-    "slug": "united-colors",
+    "slug": "colored-dots",
     "version": "1.0.0",
     "icon": "./src/assets/images/app-icon.png",
     "orientation": "portrait",
@@ -19,6 +19,12 @@
     },
     "android": {
       "package": "com.frimjo.unitedcolors"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "da814d2d-b513-482d-93bd-891ec3ac365e"
+      }
+    },
+    "owner": "johansson-interactive"
   }
 }
