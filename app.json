@@ -7,7 +7,23 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "assetBundlePatterns": ["**/*"],
-    "plugins": ["expo-screen-orientation"],
+    "plugins": [
+      "expo-screen-orientation",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Allow $(PRODUCT_NAME) to access your device motion for tilt controls."
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "deploymentTarget": "16.0"
+          }
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.frimjo.unitedcolors",
