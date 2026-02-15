@@ -1,4 +1,27 @@
-import { type AudioPlayer, createAudioPlayer, setAudioModeAsync } from 'expo-audio';
+import type { AudioPlayer } from 'expo-audio';
+
+type AudioModule = typeof import('expo-audio');
+
+let cachedAudioModule: AudioModule | null | undefined;
+let hasWarnedMissingAudio = false;
+
+const loadAudioModule = (): AudioModule | null => {
+  if (cachedAudioModule !== undefined) {
+    return cachedAudioModule;
+  }
+
+  try {
+    cachedAudioModule = require('expo-audio') as AudioModule;
+  } catch (error) {
+    cachedAudioModule = null;
+    if (!hasWarnedMissingAudio) {
+      hasWarnedMissingAudio = true;
+      console.warn('[AudioService] expo-audio unavailable. Sound effects disabled.', error);
+    }
+  }
+
+  return cachedAudioModule;
+};
 
 export class AudioService {
   private blopPlayer: AudioPlayer | null = null;
@@ -10,13 +33,19 @@ export class AudioService {
       return;
     }
 
-    await setAudioModeAsync({
+    const audioModule = loadAudioModule();
+    if (!audioModule) {
+      this.loaded = true;
+      return;
+    }
+
+    await audioModule.setAudioModeAsync({
       shouldPlayInBackground: false,
       playsInSilentMode: true,
     });
 
-    this.blopPlayer = createAudioPlayer(require('../../assets/audio/blop.ogg'));
-    this.jumpPlayer = createAudioPlayer(require('../../assets/audio/jump.ogg'));
+    this.blopPlayer = audioModule.createAudioPlayer(require('../../assets/audio/blop.ogg'));
+    this.jumpPlayer = audioModule.createAudioPlayer(require('../../assets/audio/jump.ogg'));
     this.loaded = true;
   }
 
