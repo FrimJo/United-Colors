@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "United Colors",
+    "slug": "united-colors",
+    "version": "1.0.0",
+    "icon": "./src/assets/images/app-icon.png",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      "expo-screen-orientation"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.frimjo.unitedcolors",
+      "appleTeamId": "LVDUVZJ2U7"
+    },
+    "android": {
+      "package": "com.frimjo.unitedcolors"
+    }
+  }
+}
