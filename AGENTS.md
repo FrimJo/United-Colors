@@ -40,16 +40,19 @@ Full-project commands:
 - `corepack enable`
 - `nvm use` (or install/use Node `24.13.1`)
 - `pnpm install`
-- `pnpm typecheck`
-- `pnpm lint`
-- `pnpm format:check`
+- `pnpm typecheck` — TypeScript check only
+- `pnpm lint` — Biome lint (check)
+- `pnpm lint:fix` — Biome lint with auto-fix
+- `pnpm format` — Biome format (check)
+- `pnpm format:fix` — Biome format with auto-fix
+- `pnpm preflight` — typecheck + lint + format (run before PR)
 - `pnpm test`
 
 File-scoped commands (preferred while iterating):
-- `pnpm biome check <path>`
-- `pnpm biome format --write <path>`
+- `pnpm biome check <path>` or `pnpm lint:fix` for full project
+- `pnpm biome format --write <path>` or `pnpm format:fix` for full project
 
-Before opening a PR, run full-project checks.
+Before opening a PR, run `pnpm preflight && pnpm test` (or full-project checks above).
 
 ## Architecture and Boundaries
 

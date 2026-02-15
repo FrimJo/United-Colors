@@ -72,4 +72,4 @@ Expected: returns to kiosk, not abrupt app exit.
 
 ## Pass Criteria
 - All expected results pass without critical gameplay regressions.
-- `pnpm typecheck`, `pnpm lint`, and `pnpm test` all pass.
+- `pnpm preflight` and `pnpm test` all pass.

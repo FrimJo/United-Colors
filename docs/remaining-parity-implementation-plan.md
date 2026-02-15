@@ -2,7 +2,7 @@
 
 ## Status Update (2026-02-15)
 - Phases A through H are implemented on the current React Native branch.
-- Automated checks currently pass: `pnpm typecheck`, `pnpm lint`, `pnpm test`.
+- Automated checks currently pass: `pnpm preflight` (typecheck, lint, format) and `pnpm test`.
 - Remaining work is Phase I (manual parity QA/perf/release validation).
 
 ## Goal
@@ -107,7 +107,7 @@ Complete parity with the legacy Android app (`origin/master`) for gameplay, flow
 ## Phase I — Acceptance + Release Readiness
 1. Execute parity QA checklist (`docs/parity-qa.md`).
 2. Verify 60 FPS in release builds on modern Android and iOS devices.
-3. Ensure CI passes (`typecheck`, `lint`, `test`).
+3. Ensure CI passes (`pnpm preflight`, `pnpm test`).
 4. Validate EAS build profiles for internal tracks.
 
 ## Deliverables

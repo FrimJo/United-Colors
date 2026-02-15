@@ -16,8 +16,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
-    "format:check": "biome format ."
+    "format": "biome format .",
+    "format:fix": "biome format --write .",
+    "preflight": "pnpm typecheck && pnpm lint && pnpm format"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -32,6 +33,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
+    "react-native-reanimated": "~4.1.1",
     "react-native-web": "0.21.2",
     "zustand": "5.0.8"
   },

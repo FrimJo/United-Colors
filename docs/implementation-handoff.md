@@ -40,8 +40,7 @@ This repository is a greenfield rebuild of legacy Android game logic into React 
 - Presentation remains frame-driven and side-effect free.
 
 ## Quality Gates Before Merge
-- `pnpm typecheck`
-- `pnpm lint`
+- `pnpm preflight` (typecheck + lint + format)
 - `pnpm test`
 - Manual parity QA pass from `docs/parity-qa.md`
 

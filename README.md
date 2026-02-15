@@ -29,10 +29,14 @@ pnpm start
 ## Quality
 
 ```bash
-pnpm typecheck
-pnpm lint
+pnpm typecheck    # TypeScript check
+pnpm lint         # Biome lint (check)
+pnpm format       # Biome format (check)
+pnpm preflight    # typecheck + lint + format (before PR)
 pnpm test
 ```
+
+Auto-fix: `pnpm lint:fix`, `pnpm format:fix`.
 
 ## Architecture
 
