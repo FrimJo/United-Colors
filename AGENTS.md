@@ -10,6 +10,7 @@ Do:
 - Keep `domain` pure TypeScript with no React/Expo/platform imports.
 - Add or update tests for behavior-changing logic.
 - Run quality checks before finishing work.
+- Follow the **react-native-best-practices** skill (`.cursor/skills/react-native-best-practices/SKILL.md`) when working on presentation, performance, or platform-specific code.
 
 Don't:
 - Mix game rules into UI components.
@@ -94,6 +95,14 @@ If behavior changes, update/add tests in the same change.
 - Document assumptions in PR notes or handoff summary.
 - Avoid destructive commands unless explicitly requested.
 - Never commit secrets or machine-local paths.
+
+## Skills
+
+Agents should read and follow the relevant skill file before starting work that falls within its scope.
+
+| Skill | Path | When to use |
+|-------|------|-------------|
+| react-native-best-practices | `.cursor/skills/react-native-best-practices/SKILL.md` | Presentation-layer work, FPS/TTI/bundle-size optimization, animation jank, memory leaks, native module integration, profiling. |
 
 ## When Stuck
 
