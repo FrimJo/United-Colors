@@ -28,15 +28,18 @@ class FakeClock {
   }
 }
 
-class FakeSensors {
+class FakeInput {
   start = jest.fn();
   stop = jest.fn();
+  getSample = jest.fn(() => null);
 
   constructor() {
-    this.start.mockImplementation(async (_listener, _sensitivity, onReady) => {
-      onReady?.(false);
-      onReady?.(true);
-    });
+    this.start.mockImplementation(
+      async (_sensitivity: number, onReady?: (ready: boolean) => void) => {
+        onReady?.(false);
+        onReady?.(true);
+      },
+    );
   }
 }
 
@@ -69,7 +72,7 @@ describe('GameSessionOrchestrator', () => {
   test('routes engine events to audio when sound is enabled', async () => {
     const onFrame = jest.fn();
     const clock = new FakeClock();
-    const sensors = new FakeSensors();
+    const input = new FakeInput();
     const audio = new FakeAudio();
     const engine = new FakeEngine();
     engine.setStepResult({ phase: 'RUNNING', score: 6, dots: [] }, [
@@ -80,12 +83,13 @@ describe('GameSessionOrchestrator', () => {
 
     const orchestrator = new GameSessionOrchestrator(bounds, onFrame, {
       clock,
-      sensors,
+      input,
       audio,
       engine,
       isSoundEnabled: () => true,
     });
 
+    await orchestrator.startKiosk();
     await orchestrator.startGame(1);
     clock.fire();
 
@@ -97,7 +101,7 @@ describe('GameSessionOrchestrator', () => {
   test('skips audio when sound is disabled', async () => {
     const onFrame = jest.fn();
     const clock = new FakeClock();
-    const sensors = new FakeSensors();
+    const input = new FakeInput();
     const audio = new FakeAudio();
     const engine = new FakeEngine();
     engine.setStepResult({ phase: 'RUNNING', score: 5, dots: [] }, [
@@ -106,12 +110,13 @@ describe('GameSessionOrchestrator', () => {
 
     const orchestrator = new GameSessionOrchestrator(bounds, onFrame, {
       clock,
-      sensors,
+      input,
       audio,
       engine,
       isSoundEnabled: () => false,
     });
 
+    await orchestrator.startKiosk();
     await orchestrator.startGame(1);
     clock.fire();
 
@@ -122,13 +127,13 @@ describe('GameSessionOrchestrator', () => {
   test('forwards sensor readiness and back-to-kiosk lifecycle', async () => {
     const readiness: boolean[] = [];
     const clock = new FakeClock();
-    const sensors = new FakeSensors();
+    const input = new FakeInput();
     const audio = new FakeAudio();
     const engine = new FakeEngine();
 
     const orchestrator = new GameSessionOrchestrator(bounds, jest.fn(), {
       clock,
-      sensors,
+      input,
       audio,
       engine,
       onSensorReadyChange: (ready) => {
@@ -136,13 +141,14 @@ describe('GameSessionOrchestrator', () => {
       },
     });
 
+    await orchestrator.startKiosk();
     await orchestrator.startGame(1);
     orchestrator.pause();
     await orchestrator.backToKiosk();
 
     expect(engine.pause).toHaveBeenCalledTimes(1);
     expect(engine.resetToKiosk).toHaveBeenCalledTimes(1);
-    expect(sensors.stop).toHaveBeenCalledTimes(2);
-    expect(readiness).toEqual([false, true, true]);
+    expect(input.stop).toHaveBeenCalledTimes(3);
+    expect(readiness).toEqual([true, false, true, true]);
   });
 });
