@@ -1,0 +1,55 @@
+{
+  "name": "united-colors",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "packageManager": "pnpm@10.29.3",
+  "engines": {
+    "node": "24.13.1",
+    "pnpm": "10.29.3"
+  },
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format .",
+    "format:fix": "biome format --write .",
+    "preflight": "pnpm test && pnpm doctor && pnpm typecheck && pnpm lint && pnpm format",
+    "test": "vitest run",
+    "doctor": "expo doctor"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@shopify/react-native-skia": "2.2.12",
+    "expo": "~54.0.33",
+    "expo-av": "^16.0.8",
+    "expo-sensors": "^15.0.8",
+    "expo-status-bar": "~3.0.9",
+    "expo-system-ui": "~6.0.9",
+    "react": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-reanimated": "~4.1.1",
+    "zustand": "^5.0.11"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@aspect-build/rules_esbuild",
+      "@aspect-build/rules_jest",
+      "@aspect-build/rules_js",
+      "@aspect-build/rules_ts",
+      "@biomejs/biome",
+      "@shopify/react-native-skia",
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.0",
+    "@types/react": "~19.1.0",
+    "typescript": "~5.9.3",
+    "vitest": "^2.1.0"
+  }
+}

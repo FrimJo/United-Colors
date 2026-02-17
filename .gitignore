@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Native
+ios/
+android/
+
+# Build
+*.jsbundle
+*.tsbuildinfo
+
+# Env
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+*.swp
+*.swo
+*~
+
+# Test
+coverage/
+
+# Debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Biome
+.biome/
