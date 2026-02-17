@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
-import { Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { bootstrapApp } from '@/app/bootstrap';
 import { AppProviders } from '@/app/providers';
 import { GameCanvas } from '@/presentation/game/GameCanvas';
@@ -22,9 +23,20 @@ function RootApp() {
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar style="light" />
-      <GameCanvas frame={vm.frame} width={vm.width} height={vm.height} />
+      <View style={styles.gameArea}>
+        <GameCanvas frame={vm.frame} width={vm.width} height={vm.height} />
+        {vm.phase === 'RUNNING' && vm.devModeTouchHandlers ? (
+          <View
+            style={[StyleSheet.absoluteFill, { width: vm.width, height: vm.height }]}
+            {...vm.devModeTouchHandlers}
+            onStartShouldSetResponder={() => true}
+          />
+        ) : null}
+      </View>
 
-      <Hud score={vm.score} highScore={vm.highScore} />
+      {vm.phase === 'RUNNING' || vm.phase === 'GAME_OVER' ? (
+        <Hud score={vm.score} highScore={vm.highScore} />
+      ) : null}
 
       <View style={styles.topRight}>
         <Pressable style={styles.chip} onPress={vm.onToggleSound}>
@@ -49,7 +61,7 @@ function RootApp() {
       {vm.phase === 'RUNNING' && vm.motionAvailable && !vm.sensorReady ? (
         <SensorCalibratingOverlay />
       ) : null}
-      {!vm.motionAvailable ? <UnsupportedDeviceOverlay /> : null}
+      {!vm.motionAvailable && !vm.devModeTouchHandlers ? <UnsupportedDeviceOverlay /> : null}
     </SafeAreaView>
   );
 }
@@ -57,7 +69,9 @@ function RootApp() {
 export default function App() {
   return (
     <AppProviders>
-      <RootApp />
+      <SafeAreaProvider>
+        <RootApp />
+      </SafeAreaProvider>
     </AppProviders>
   );
 }
@@ -66,6 +80,10 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: '#78b7e2',
+  },
+  gameArea: {
+    flex: 1,
+    position: 'relative',
   },
   topRight: {
     position: 'absolute',

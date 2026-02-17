@@ -77,33 +77,35 @@ function SkiaGameCanvas({ frame, width, height, skia }: SkiaProps) {
   return (
     <Canvas style={{ width, height, backgroundColor: background }}>
       <Fill color={background} />
-      {frame.dots.map((dot) => (
-        <Group key={dot.id}>
-          <Circle cx={dot.x} cy={dot.y} r={dot.radius} color={dot.color} />
-          {dotTexture ? (
-            <SkiaImage
-              image={dotTexture}
-              x={dot.x - dot.radius}
-              y={dot.y - dot.radius}
-              width={dot.radius * 2}
-              height={dot.radius * 2}
-              fit="fill"
-              opacity={0.5}
-            />
-          ) : null}
-          {glareTexture ? (
-            <SkiaImage
-              image={glareTexture}
-              x={dot.x - dot.radius}
-              y={dot.y - dot.radius}
-              width={dot.radius * 2}
-              height={dot.radius * 2}
-              fit="fill"
-              opacity={0.35}
-            />
-          ) : null}
-        </Group>
-      ))}
+      {frame.dots
+        .filter((dot) => dot.radius > 0)
+        .map((dot) => (
+          <Group key={dot.id}>
+            <Circle cx={dot.x} cy={dot.y} r={dot.radius} color={dot.color} />
+            {dotTexture ? (
+              <SkiaImage
+                image={dotTexture}
+                x={dot.x - dot.radius}
+                y={dot.y - dot.radius}
+                width={dot.radius * 2}
+                height={dot.radius * 2}
+                fit="fill"
+                opacity={0.5}
+              />
+            ) : null}
+            {glareTexture ? (
+              <SkiaImage
+                image={glareTexture}
+                x={dot.x - dot.radius}
+                y={dot.y - dot.radius}
+                width={dot.radius * 2}
+                height={dot.radius * 2}
+                fit="fill"
+                opacity={0.35}
+              />
+            ) : null}
+          </Group>
+        ))}
     </Canvas>
   );
 }
