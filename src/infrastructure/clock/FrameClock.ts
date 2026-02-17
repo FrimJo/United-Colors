@@ -13,16 +13,23 @@ export class FrameClock {
       return;
     }
     this.running = true;
-    this.last = Date.now();
+    this.accumulator = 0;
+    this.last = 0;
     const stepMs = 1000 / GAME_HZ;
+    const maxAccumulator = stepMs * 4;
 
-    const frame = () => {
+    const frame = (rafTime: number) => {
       if (!this.running) {
         return;
       }
-      const now = Date.now();
-      this.accumulator += now - this.last;
-      this.last = now;
+      const now = rafTime;
+      if (this.last === 0) {
+        this.last = now;
+      } else {
+        this.accumulator += now - this.last;
+        this.last = now;
+      }
+      this.accumulator = Math.min(this.accumulator, maxAccumulator);
 
       while (this.accumulator >= stepMs) {
         tick();
