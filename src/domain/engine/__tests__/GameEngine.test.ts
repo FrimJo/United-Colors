@@ -4,6 +4,17 @@ import { createDot } from '@/domain/entities/Dot';
 import { RULES } from '@/domain/rules/GameRules';
 import type { RandomProvider } from '@/domain/types/GameTypes';
 
+describe('nextSpawnWait', () => {
+  test('returns at least MIN_SPAWN_INTERVAL at max difficulty', () => {
+    expect(nextSpawnWait(RULES.MAX_TIME_DIFFICULTY, false)).toBeGreaterThanOrEqual(
+      RULES.MIN_SPAWN_INTERVAL,
+    );
+    expect(nextSpawnWait(RULES.MAX_TIME_DIFFICULTY + 1000, false)).toBeGreaterThanOrEqual(
+      RULES.MIN_SPAWN_INTERVAL,
+    );
+  });
+});
+
 const bounds = { width: 300, height: 600, density: 2 };
 
 const createRandomProvider = (): RandomProvider => {
@@ -71,6 +82,22 @@ describe('GameEngine', () => {
     const result = engine.step(null);
     const spawns = result.events.filter((event) => event.type === 'POINT_SPAWNED');
     expect(spawns).toHaveLength(1);
+  });
+
+  test('point dot spawn respects stored nextPointWait', () => {
+    const engine = new GameEngine(bounds, createRandomProvider());
+    engine.start('NORMAL');
+    engine.step(null);
+
+    const state = (engine as any).state;
+    state.timeStep = 100;
+    state.lastPointStep = 0;
+    state.pointDotId = null;
+    state.nextPointWait = 500;
+
+    const result = engine.step(null);
+    const spawns = result.events.filter((event) => event.type === 'POINT_SPAWNED');
+    expect(spawns).toHaveLength(0);
   });
 
   test('same-color collision emits DOT_CONSUMED then SCORE_CHANGED', () => {

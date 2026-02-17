@@ -12,7 +12,8 @@ export const nextSpawnWait = (timeStep: number, kiosk: boolean): number => {
     return RULES.SMALL_DOT_CREATE_INTERVAL;
   }
   const percent = Math.min(1, timeStep / RULES.MAX_TIME_DIFFICULTY);
-  return RULES.SMALL_DOT_CREATE_INTERVAL * (1 - percent);
+  const interval = RULES.SMALL_DOT_CREATE_INTERVAL * (1 - percent);
+  return Math.max(RULES.MIN_SPAWN_INTERVAL, interval);
 };
 
 export const spawnSmallDot = (

@@ -23,6 +23,7 @@ interface EngineState {
   timeStep: number;
   lastSmallDotStep: number;
   lastPointStep: number;
+  nextPointWait: number;
   colorCounter: number;
   kiosk: boolean;
 }
@@ -59,6 +60,11 @@ export class GameEngine {
     });
   }
 
+  private computeNextPointWait(): number {
+    const interval = this.random.nextInt(RULES.POINT_DOT_TIME_BETWEEN);
+    return interval + RULES.POINT_DOT_TIME_BETWEEN / 2;
+  }
+
   private createInitialState(kiosk: boolean): EngineState {
     const player = this.createPlayer();
     return {
@@ -70,6 +76,7 @@ export class GameEngine {
       timeStep: 0,
       lastSmallDotStep: 0,
       lastPointStep: 0,
+      nextPointWait: this.computeNextPointWait(),
       colorCounter: this.random.nextInt(COLOR_SET.length),
       kiosk,
     };
@@ -165,15 +172,12 @@ export class GameEngine {
       return;
     }
 
-    const interval = this.random.nextInt(RULES.POINT_DOT_TIME_BETWEEN);
-    const randomWait = interval + RULES.POINT_DOT_TIME_BETWEEN / 2;
-
     const currentPoint = this.state.pointDotId
       ? this.state.dots.find((d) => d.id === this.state.pointDotId)
       : undefined;
 
     if (!currentPoint) {
-      if (this.state.timeStep > randomWait) {
+      if (this.state.timeStep > this.state.nextPointWait) {
         const dot = spawnPointDot(
           this.nextId++,
           this.state.timeStep,
@@ -184,6 +188,7 @@ export class GameEngine {
         );
         this.state.pointDotId = dot.id;
         this.state.lastPointStep = this.state.timeStep;
+        this.state.nextPointWait = this.state.timeStep + this.computeNextPointWait();
         this.state.dots.push(dot);
         events.push({ type: 'POINT_SPAWNED', dotId: dot.id });
       }
@@ -191,7 +196,7 @@ export class GameEngine {
     }
 
     if (currentPoint.flagged) {
-      if (this.state.timeStep - this.state.lastPointStep > randomWait) {
+      if (this.state.timeStep > this.state.nextPointWait) {
         const dot = spawnPointDot(
           this.nextId++,
           this.state.timeStep,
@@ -202,6 +207,7 @@ export class GameEngine {
         );
         this.state.pointDotId = dot.id;
         this.state.lastPointStep = this.state.timeStep;
+        this.state.nextPointWait = this.state.timeStep + this.computeNextPointWait();
         this.state.dots.push(dot);
         events.push({ type: 'POINT_SPAWNED', dotId: dot.id });
       }
