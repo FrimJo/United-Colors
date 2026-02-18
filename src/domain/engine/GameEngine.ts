@@ -79,9 +79,15 @@ export class GameEngine {
 		return this.stateMachine.transition("RUNNING");
 	}
 
-	/** Feed sensor data to the player dot */
+	/** Feed sensor data to the player dot (gyro) */
 	onSensorInput(x: number, y: number): void {
 		this.player.updateOrientation(x, y);
+	}
+
+	/** Move player by pixel delta (e.g. touch drag). No-op when not RUNNING. */
+	onMovementDelta(dx: number, dy: number): void {
+		if (this.stateMachine.phase !== "RUNNING") return;
+		this.player.applyMovementDelta(dx, dy, this.screen);
 	}
 
 	/** Run one simulation tick (30 Hz) */

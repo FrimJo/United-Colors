@@ -2,7 +2,7 @@ import type { ScreenSize } from "../types";
 import { Dot } from "./Dot";
 
 /**
- * The player-controlled dot. Moves via gyro sensor input.
+ * The player-controlled dot. Movement via gyro (orientation) or direct touch (pixel delta).
  * Bounds-clamped so it cannot leave the screen.
  */
 export class PlayerDot extends Dot {
@@ -13,10 +13,19 @@ export class PlayerDot extends Dot {
 		super(x, y, 0, 0, color, size, speed);
 	}
 
-	/** Called when new sensor data arrives */
+	/** Called when new sensor data arrives (gyro) */
 	updateOrientation(x: number, y: number): void {
 		this.sensorX = x * this.velocity;
 		this.sensorY = y * this.velocity;
+	}
+
+	/** Apply a one-shot movement in pixels (e.g. touch drag). Clamped to screen bounds. */
+	applyMovementDelta(dx: number, dy: number, screen: ScreenSize): void {
+		const halfSize = this.size / 2;
+		const newX = Math.max(halfSize, Math.min(screen.width - halfSize, this.x + dx));
+		const newY = Math.max(halfSize, Math.min(screen.height - halfSize, this.y + dy));
+		this.x = newX;
+		this.y = newY;
 	}
 
 	/** Move player based on sensor, clamped to screen bounds */

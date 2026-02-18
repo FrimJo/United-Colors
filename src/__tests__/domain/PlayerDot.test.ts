@@ -57,4 +57,16 @@ describe("PlayerDot", () => {
 		expect(player.x).toBeCloseTo(405);
 		expect(player.y).toBeCloseTo(297);
 	});
+
+	it("applyMovementDelta moves by pixel delta and clamps to bounds", () => {
+		const screen = { width: 800, height: 600 };
+		const player = new PlayerDot(400, 300, "#E91E63", 50, 10);
+		player.applyMovementDelta(20, -10, screen);
+		expect(player.x).toBe(420);
+		expect(player.y).toBe(290);
+		player.applyMovementDelta(-1000, 0, screen);
+		expect(player.x).toBe(25); // halfSize = 25, clamped left
+		player.applyMovementDelta(0, 1000, screen);
+		expect(player.y).toBe(575); // 600 - 25, clamped bottom
+	});
 });
