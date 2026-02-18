@@ -1,6 +1,7 @@
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useStore } from "zustand";
 import { createGameStore } from "../application/GameStore";
 import { handleGameOver } from "../application/useCases/GameOver";
@@ -27,12 +28,27 @@ const storage = new AsyncStorageRepository();
 const sensor = new DeviceMotionAdapter();
 const audio = new AudioService();
 
+const isDev = typeof __DEV__ !== "undefined" && __DEV__;
+
+/** Dev only: 'gyro' | 'touch' | 'pending' (waiting for first gyro sample or timeout) */
+type DevControlMode = "gyro" | "touch" | "pending";
+
+const GYRO_DETECT_MS = 800;
+
 export const GameScreen: React.FC = () => {
 	const frame = useStore(store, (s) => s.frame);
+	const soundEnabled = useStore(store, (s) => s.settings.soundEnabled);
 	const engineRef = useRef<GameEngine | null>(null);
 	const clockRef = useRef<FrameClock | null>(null);
 	const [screenReady, setScreenReady] = useState(false);
 	const screenRef = useRef<ScreenSize>(DEFAULT_SCREEN);
+
+	// Dev only: prefer gyro, fallback to touch when gyro not available (e.g. simulator)
+	const [devControlMode, setDevControlMode] = useState<DevControlMode>("pending");
+	const useTouchInputRef = useRef(false);
+	const devGyroTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const setDevControlModeRef = useRef(setDevControlMode);
+	setDevControlModeRef.current = setDevControlMode;
 
 	const getEngine = useCallback((): GameEngine => {
 		if (!engineRef.current) {
@@ -59,15 +75,44 @@ export const GameScreen: React.FC = () => {
 		clockRef.current?.stop();
 	}, []);
 
-	// Setup sensor and audio
+	// Keep useTouchInputRef in sync so sensor callback can skip feeding when touch is active
 	useEffect(() => {
-		sensor.onSample((sample) => {
-			engineRef.current?.onSensorInput(sample.x, sample.y);
-		});
+		useTouchInputRef.current = isDev && devControlMode === "touch";
+	}, [devControlMode]);
 
-		audio.preload(require("../../assets/sounds/blop.ogg"), require("../../assets/sounds/jump.ogg"));
+	// Sync store sound setting to audio service
+	useEffect(() => {
+		audio.setEnabled(soundEnabled);
+	}, [soundEnabled]);
 
+	// Setup sensor and audio (await preload so sounds are ready before game starts)
+	useEffect(() => {
+		let cancelled = false;
+		(async () => {
+			await audio.preload(
+				require("../../assets/sounds/blop.ogg"),
+				require("../../assets/sounds/jump.ogg"),
+			);
+			if (cancelled) return;
+			sensor.onSample((sample) => {
+				if (isDev && useTouchInputRef.current) return;
+				// Dev: first gyro sample → prefer gyro, cancel touch fallback
+				if (isDev) {
+					setDevControlModeRef.current((prev) => {
+						if (prev !== "pending") return prev;
+						if (devGyroTimeoutRef.current) {
+							clearTimeout(devGyroTimeoutRef.current);
+							devGyroTimeoutRef.current = null;
+						}
+						return "gyro";
+					});
+				}
+				engineRef.current?.onSensorInput(sample.x, sample.y);
+			});
+		})();
 		return () => {
+			cancelled = true;
+			if (devGyroTimeoutRef.current) clearTimeout(devGyroTimeoutRef.current);
 			sensor.stop();
 			clockRef.current?.stop();
 			audio.unload();
@@ -106,6 +151,14 @@ export const GameScreen: React.FC = () => {
 		const engine = getEngine();
 		startGame(engine, store);
 		sensor.start();
+		if (isDev) {
+			setDevControlMode("pending");
+			if (devGyroTimeoutRef.current) clearTimeout(devGyroTimeoutRef.current);
+			devGyroTimeoutRef.current = setTimeout(() => {
+				devGyroTimeoutRef.current = null;
+				setDevControlMode((prev) => (prev === "pending" ? "touch" : prev));
+			}, GYRO_DETECT_MS);
+		}
 		startClock();
 	}, [getEngine, startClock]);
 
@@ -134,17 +187,48 @@ export const GameScreen: React.FC = () => {
 
 	return (
 		<View style={styles.container}>
-			<GameCanvas frame={frame} onLayout={handleLayout} />
+			<SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+				<GameCanvas
+					frame={frame}
+					onLayout={handleLayout}
+					onDragDelta={
+						isDev && devControlMode === "touch"
+							? (dx, dy) => {
+									const engine = engineRef.current;
+									if (engine) {
+										engine.onMovementDelta(dx, dy);
+										store.getState().updateFrame(engine.getFrame());
+									}
+								}
+							: undefined
+					}
+				/>
 
-			{frame.phase === "RUNNING" && <HUD score={frame.score} onPause={handlePause} />}
+				{isDev && (
+					<View style={styles.devBadge} pointerEvents="none">
+						<Text style={styles.devBadgeText}>
+							Control:{" "}
+							{devControlMode === "pending"
+								? frame.phase === "RUNNING"
+									? "Checking…"
+									: "—"
+								: devControlMode === "gyro"
+									? "Gyro"
+									: "Touch"}
+						</Text>
+					</View>
+				)}
 
-			{frame.phase === "KIOSK" && <KioskOverlay onStart={handleStart} />}
+				{frame.phase === "RUNNING" && <HUD score={frame.score} onPause={handlePause} />}
 
-			{frame.phase === "PAUSED" && <PauseOverlay onResume={handleResume} />}
+				{frame.phase === "KIOSK" && <KioskOverlay onStart={handleStart} />}
 
-			{frame.phase === "GAME_OVER" && (
-				<GameOverOverlay score={frame.score} onRetry={handleRetry} onBack={handleBack} />
-			)}
+				{frame.phase === "PAUSED" && <PauseOverlay onResume={handleResume} />}
+
+				{frame.phase === "GAME_OVER" && (
+					<GameOverOverlay score={frame.score} onRetry={handleRetry} onBack={handleBack} />
+				)}
+			</SafeAreaView>
 		</View>
 	);
 };
@@ -152,6 +236,22 @@ export const GameScreen: React.FC = () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: "#000",
+		backgroundColor: "#78B7E3",
+	},
+	safeArea: {
+		flex: 1,
+	},
+	devBadge: {
+		position: "absolute",
+		bottom: 12,
+		left: 12,
+		backgroundColor: "rgba(0,0,0,0.7)",
+		paddingHorizontal: 8,
+		paddingVertical: 4,
+		borderRadius: 6,
+	},
+	devBadgeText: {
+		color: "#8BC34A",
+		fontSize: 12,
 	},
 });

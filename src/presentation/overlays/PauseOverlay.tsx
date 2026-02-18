@@ -23,14 +23,12 @@ const styles = StyleSheet.create({
 		backgroundColor: "rgba(0, 0, 0, 0.5)",
 	},
 	button: {
-		paddingHorizontal: 40,
-		paddingVertical: 16,
-		backgroundColor: "#2196F3",
-		borderRadius: 8,
+		paddingVertical: 12,
+		paddingHorizontal: 20,
+		backgroundColor: "transparent",
 	},
 	buttonText: {
-		fontSize: 20,
-		fontWeight: "bold",
+		fontSize: 16,
 		color: "#fff",
 	},
 });

@@ -15,7 +15,7 @@ export const GameOverOverlay: React.FC<GameOverOverlayProps> = ({ score, onRetry
 				<Text style={styles.buttonText}>RETRY</Text>
 			</TouchableOpacity>
 			<TouchableOpacity style={styles.backButton} onPress={onBack}>
-				<Text style={styles.buttonText}>MENU</Text>
+				<Text style={styles.buttonText}>BACK</Text>
 			</TouchableOpacity>
 		</View>
 	);
@@ -35,21 +35,18 @@ const styles = StyleSheet.create({
 		marginBottom: 30,
 	},
 	retryButton: {
-		paddingHorizontal: 40,
-		paddingVertical: 16,
-		backgroundColor: "#E91E63",
-		borderRadius: 8,
-		marginBottom: 16,
+		paddingVertical: 12,
+		paddingHorizontal: 20,
+		backgroundColor: "transparent",
+		marginBottom: 8,
 	},
 	backButton: {
-		paddingHorizontal: 40,
-		paddingVertical: 16,
-		backgroundColor: "#666",
-		borderRadius: 8,
+		paddingVertical: 12,
+		paddingHorizontal: 20,
+		backgroundColor: "transparent",
 	},
 	buttonText: {
-		fontSize: 20,
-		fontWeight: "bold",
+		fontSize: 16,
 		color: "#fff",
 	},
 });
