@@ -1,34 +1,40 @@
-import { Audio } from "expo-av";
-import type { AVPlaybackSource } from "expo-av";
+import { Asset } from "expo-asset";
+import { createAudioPlayer, setAudioModeAsync, type AudioPlayer } from "expo-audio";
 import type { AudioPort } from "../domain/types";
 
+/** require() result for bundling; we resolve to URI via expo-asset for reliable playback */
+type AssetModule = number;
+
 /**
- * Audio service using expo-av.
- * Pre-loads game sounds and plays them on demand.
+ * Audio service using expo-audio.
+ * Pre-loads game sounds via expo-asset (for reliable playback on Android) and plays them on demand.
  */
 export class AudioService implements AudioPort {
 	private enabled = true;
-	private collectSound: Audio.Sound | null = null;
-	private pointSpawnSound: Audio.Sound | null = null;
+	private collectPlayer: AudioPlayer | null = null;
+	private pointSpawnPlayer: AudioPlayer | null = null;
 	private loaded = false;
 
-	async preload(
-		collectSource: AVPlaybackSource,
-		pointSpawnSource: AVPlaybackSource,
-	): Promise<void> {
+	async preload(collectAsset: AssetModule, pointSpawnAsset: AssetModule): Promise<void> {
 		try {
-			await Audio.setAudioModeAsync({
-				playsInSilentModeIOS: true,
-				staysActiveInBackground: false,
+			await setAudioModeAsync({
+				playsInSilentMode: true,
+				shouldPlayInBackground: false,
 			});
 
-			const [collectResult, pointResult] = await Promise.all([
-				Audio.Sound.createAsync(collectSource),
-				Audio.Sound.createAsync(pointSpawnSource),
+			const [collectRes, pointSpawnRes] = await Promise.all([
+				Asset.loadAsync(collectAsset),
+				Asset.loadAsync(pointSpawnAsset),
 			]);
+			const collectUri = collectRes[0]?.localUri ?? collectRes[0]?.uri ?? null;
+			const pointSpawnUri = pointSpawnRes[0]?.localUri ?? pointSpawnRes[0]?.uri ?? null;
+			if (!collectUri || !pointSpawnUri) {
+				this.loaded = false;
+				return;
+			}
 
-			this.collectSound = collectResult.sound;
-			this.pointSpawnSound = pointResult.sound;
+			this.collectPlayer = createAudioPlayer(collectUri);
+			this.pointSpawnPlayer = createAudioPlayer(pointSpawnUri);
 			this.loaded = true;
 		} catch {
 			// Audio unavailable (e.g. simulator) -- degrade gracefully
@@ -37,17 +43,13 @@ export class AudioService implements AudioPort {
 	}
 
 	playCollect(): void {
-		if (!this.enabled || !this.loaded || !this.collectSound) return;
-		this.collectSound.setPositionAsync(0).then(() => {
-			this.collectSound?.playAsync();
-		});
+		if (!this.enabled || !this.loaded || !this.collectPlayer) return;
+		this.collectPlayer.seekTo(0).then(() => this.collectPlayer?.play());
 	}
 
 	playPointSpawn(): void {
-		if (!this.enabled || !this.loaded || !this.pointSpawnSound) return;
-		this.pointSpawnSound.setPositionAsync(0).then(() => {
-			this.pointSpawnSound?.playAsync();
-		});
+		if (!this.enabled || !this.loaded || !this.pointSpawnPlayer) return;
+		this.pointSpawnPlayer.seekTo(0).then(() => this.pointSpawnPlayer?.play());
 	}
 
 	setEnabled(enabled: boolean): void {
@@ -55,10 +57,10 @@ export class AudioService implements AudioPort {
 	}
 
 	async unload(): Promise<void> {
-		await this.collectSound?.unloadAsync();
-		await this.pointSpawnSound?.unloadAsync();
-		this.collectSound = null;
-		this.pointSpawnSound = null;
+		this.collectPlayer?.remove();
+		this.pointSpawnPlayer?.remove();
+		this.collectPlayer = null;
+		this.pointSpawnPlayer = null;
 		this.loaded = false;
 	}
 }
