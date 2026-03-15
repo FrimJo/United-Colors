@@ -13,19 +13,23 @@
 		"android": "expo run:android",
 		"ios": "expo run:ios",
 		"web": "expo start --web",
+		"prebuild:ios": "expo prebuild --platform ios --clean",
+		"prebuild:android": "expo prebuild --platform android --clean",
+		"prebuild": "expo prebuild --clean",
 		"typecheck": "tsc --noEmit",
 		"lint": "biome lint .",
 		"lint:fix": "biome lint --write .",
 		"format": "biome format .",
 		"format:fix": "biome format --write .",
-		"preflight": "pnpm test && pnpm doctor && pnpm typecheck && pnpm lint && pnpm format",
-		"test": "vitest run",
-		"doctor": "expo doctor"
+		"preflight": "pnpm typecheck && pnpm test && pnpm format:fix && pnpm dlx react-doctor@latest . --verbose --diff && pnpm run expo:doctor",
+		"test": "vitest run --config vitest.config.mts",
+		"expo:doctor": "npm_config_loglevel=error pnpm dlx expo-doctor@latest"
 	},
 	"dependencies": {
 		"@react-native-async-storage/async-storage": "^2.2.0",
 		"@shopify/react-native-skia": "2.2.12",
 		"expo": "~54.0.33",
+		"expo-asset": "~12.0.12",
 		"expo-audio": "~1.1.1",
 		"expo-build-properties": "^1.0.10",
 		"expo-sensors": "^15.0.8",
@@ -35,6 +39,7 @@
 		"react-native": "0.81.5",
 		"react-native-reanimated": "~4.1.1",
 		"react-native-safe-area-context": "~5.6.2",
+		"react-native-worklets": "0.5.1",
 		"zustand": "^5.0.11"
 	},
 	"pnpm": {
