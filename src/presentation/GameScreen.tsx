@@ -40,7 +40,7 @@ export const GameScreen: React.FC = () => {
 	const soundEnabled = useStore(store, (s) => s.settings.soundEnabled);
 	const engineRef = useRef<GameEngine | null>(null);
 	const clockRef = useRef<FrameClock | null>(null);
-	const [screenReady, setScreenReady] = useState(false);
+	const kioskInitializedRef = useRef(false);
 	const screenRef = useRef<ScreenSize>(DEFAULT_SCREEN);
 
 	// Dev only: prefer gyro, fallback to touch when gyro not available (e.g. simulator)
@@ -119,16 +119,6 @@ export const GameScreen: React.FC = () => {
 		};
 	}, []);
 
-	// Start kiosk on mount
-	useEffect(() => {
-		if (screenReady) {
-			const engine = getEngine();
-			engine.startKiosk();
-			store.getState().updateFrame(engine.getFrame());
-			startClock();
-		}
-	}, [screenReady, getEngine, startClock]);
-
 	// Watch for game over
 	useEffect(() => {
 		if (frame.phase === "GAME_OVER") {
@@ -142,9 +132,14 @@ export const GameScreen: React.FC = () => {
 		(size: ScreenSize) => {
 			screenRef.current = size;
 			engineRef.current?.setScreen(size);
-			if (!screenReady) setScreenReady(true);
+			if (kioskInitializedRef.current) return;
+			kioskInitializedRef.current = true;
+			const engine = getEngine();
+			engine.startKiosk();
+			store.getState().updateFrame(engine.getFrame());
+			startClock();
 		},
-		[screenReady],
+		[getEngine, startClock],
 	);
 
 	const handleStart = useCallback(() => {
