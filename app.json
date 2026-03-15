@@ -15,7 +15,10 @@
 		"ios": {
 			"supportsTablet": false,
 			"bundleIdentifier": "com.unitedcolors.app",
-			"appleTeamId": "LVDUVZJ2U7"
+			"appleTeamId": "LVDUVZJ2U7",
+			"infoPlist": {
+				"ITSAppUsesNonExemptEncryption": false
+			}
 		},
 		"android": {
 			"adaptiveIcon": {
