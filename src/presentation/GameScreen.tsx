@@ -14,8 +14,8 @@ import { AsyncStorageRepository } from "../infrastructure/AsyncStorageRepository
 import { AudioService } from "../infrastructure/AudioService";
 import { DeviceMotionAdapter } from "../infrastructure/DeviceMotionAdapter";
 import { FrameClock } from "../infrastructure/FrameClock";
-import { GameCanvas } from "./GameCanvas";
 import { HUD } from "./components/HUD";
+import { GameCanvas } from "./GameCanvas";
 import { GameOverOverlay } from "./overlays/GameOverOverlay";
 import { KioskOverlay } from "./overlays/KioskOverlay";
 import { PauseOverlay } from "./overlays/PauseOverlay";
@@ -47,8 +47,6 @@ export const GameScreen: React.FC = () => {
 	const [devControlMode, setDevControlMode] = useState<DevControlMode>("pending");
 	const useTouchInputRef = useRef(false);
 	const devGyroTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const setDevControlModeRef = useRef(setDevControlMode);
-	setDevControlModeRef.current = setDevControlMode;
 
 	const getEngine = useCallback((): GameEngine => {
 		if (!engineRef.current) {
@@ -98,14 +96,11 @@ export const GameScreen: React.FC = () => {
 				if (isDev && useTouchInputRef.current) return;
 				// Dev: first gyro sample → prefer gyro, cancel touch fallback
 				if (isDev) {
-					setDevControlModeRef.current((prev) => {
-						if (prev !== "pending") return prev;
-						if (devGyroTimeoutRef.current) {
-							clearTimeout(devGyroTimeoutRef.current);
-							devGyroTimeoutRef.current = null;
-						}
-						return "gyro";
-					});
+					if (devGyroTimeoutRef.current) {
+						clearTimeout(devGyroTimeoutRef.current);
+						devGyroTimeoutRef.current = null;
+					}
+					setDevControlMode((prev) => (prev === "pending" ? "gyro" : prev));
 				}
 				engineRef.current?.onSensorInput(sample.x, sample.y);
 			});
