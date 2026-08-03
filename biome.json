@@ -1,12 +1,22 @@
 {
-	"$schema": "https://biomejs.dev/schemas/1.9.0/schema.json",
-	"organizeImports": {
-		"enabled": true
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"assist": {
+		"actions": {
+			"source": {
+				"organizeImports": "on"
+			}
+		}
 	},
 	"linter": {
 		"enabled": true,
+		"domains": {
+			"react": "recommended",
+			"reactNative": "recommended",
+			"types": "recommended",
+			"playwright": "recommended"
+		},
 		"rules": {
-			"recommended": true,
+			"preset": "recommended",
 			"correctness": {
 				"noUnusedVariables": "warn",
 				"noUnusedImports": "warn"
@@ -28,6 +38,16 @@
 		}
 	},
 	"files": {
-		"ignore": ["node_modules", "dist", "coverage", ".expo", "ios", "android", "assets", ".cursor"]
+		"includes": [
+			"**",
+			"!node_modules",
+			"!dist",
+			"!coverage",
+			"!.expo",
+			"!ios",
+			"!android",
+			"!assets",
+			"!.cursor"
+		]
 	}
 }
